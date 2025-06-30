@@ -1,0 +1,82 @@
+[
+  {
+    "type": "function",
+    "name": "set_effect_parameter",
+    "description": "Adjusts a parameter of a static audio effect like reverb, delay, or a filter.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "effect": {
+          "type": "string",
+          "description": "The name of the effect to modify.",
+          "enum": ["reverb", "delay", "filter"]
+        },
+        "parameter": {
+          "type": "string",
+          "description": "The specific parameter to change. For reverb: 'mix'. For delay: 'time', 'feedback'. For filter: 'frequency'."
+        },
+        "value": {
+          "type": "number",
+          "description": "The new value for the parameter. Use the appropriate scale (0-1 for mix, seconds for time, Hz for frequency)."
+        }
+      },
+      "required": ["effect", "parameter", "value"]
+    }
+  },
+  {
+    "type": "function",
+    "name": "set_playback_property",
+    "description": "Adjusts a core playback property like volume or speed.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "property": {
+          "type": "string",
+          "description": "The playback property to change.",
+          "enum": ["volume", "speed"]
+        },
+        "value": {
+          "type": "number",
+          "description": "The new value. For volume, 1.0 is normal. For speed, 1.0 is normal speed, 2.0 is double speed."
+        }
+      },
+      "required": ["property", "value"]
+    }
+  },
+  {
+    "type": "function",
+    "name": "seek_audio",
+    "description": "Jumps forward or backward in the audio track by a specified number of seconds.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "description": "The direction to seek.",
+          "enum": ["forward", "backward"]
+        },
+        "seconds": {
+          "type": "number",
+          "description": "The number of seconds to jump forward or backward."
+        }
+      },
+      "required": ["direction", "seconds"]
+    }
+  },
+  {
+    "type": "function",
+    "name": "playback_control",
+    "description": "Controls the main audio playback state.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "The action to perform.",
+          "enum": ["play", "pause", "stop"]
+        }
+      },
+      "required": ["action"]
+    }
+  }
+]

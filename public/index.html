@@ -19,71 +19,40 @@
                 <h2>1. Load Audio</h2>
                 <input type="file" id="audio-file-input" accept="audio/*">
                 <p id="file-status">No audio file loaded.</p>
+                <div class="progress-bar-container" style="display: none;">
+                    <div id="progress-bar" class="progress-bar"></div>
+                </div>
             </div>
 
             <div class="card" id="voice-agent-controls">
                 <h2>2. Control with Voice</h2>
                 <div class="voice-instructions">
-                    <p>Try saying:</p>
+                    <p>Try saying things like:</p>
                     <ul>
-                        <li>"Play the music" / "Stop the music"</li>
-                        <li>"Add a lot of reverb" / "Remove the reverb"</li>
-                        <li>"Set reverb mix to 70 percent"</li>
-                        <li>"Give me a short delay" / "Set delay time to 1 second"</li>
-                        <li>"Add a strong echo" (for feedback)</li>
-                        <li>"Cut the high frequencies" / "Make it sound muffled"</li>
+                        <li>"Play the music." / "Make it louder."</li>
+                        <li>"Play it twice as fast."</li>
+                        <li>"Go forward 10 seconds."</li>
+                        <li>"Add a lot of reverb."</li>
                     </ul>
                 </div>
                 <button id="voice-control-btn" disabled>Start Voice Control</button>
                 <p id="voice-status">Load an audio file to enable voice control.</p>
-                <!-- New element for command feedback -->
-                <div id="command-feedback" class="feedback-box" style="display: none;"></div>
+                <div id="last-command-display" class="last-command" style="display: none;">
+                    <strong>Last Command:</strong> <span id="last-command-text"></span>
+                </div>
             </div>
 
             <div class="card" id="manual-controls" style="display: none;">
                 <h2>3. Manual Controls</h2>
-                
-                <div class="effect-group" data-effect="reverb">
-                    <h3>Reverb</h3>
-                    <div class="slider-container">
-                        <label for="reverb-mix">Mix</label>
-                        <input type="range" id="reverb-mix" min="0" max="1" value="0.3" step="0.01">
-                        <span class="slider-value">0.3</span>
-                    </div>
-                </div>
-
-                <div class="effect-group" data-effect="delay">
-                    <h3>Delay / Echo</h3>
-                    <div class="slider-container">
-                        <label for="delay-time">Time</label>
-                        <input type="range" id="delay-time" min="0" max="1" value="0.3" step="0.01">
-                        <span class="slider-value">0.3s</span>
-                    </div>
-                    <div class="slider-container">
-                        <label for="delay-feedback">Feedback</label>
-                        <input type="range" id="delay-feedback" min="0" max="0.9" value="0.4" step="0.01">
-                        <span class="slider-value">0.4</span>
-                    </div>
-                </div>
-
-                <div class="effect-group" data-effect="filter">
-                    <h3>Filter</h3>
-                     <div class="slider-container">
-                        <label for="filter-frequency">Frequency</label>
-                        <input type="range" id="filter-frequency" min="20" max="20000" value="20000" step="1">
-                        <span class="slider-value">20000Hz</span>
-                    </div>
-                </div>
-
+                <div id="effects-panel"></div>
                 <div class="playback-controls">
                     <button id="play-btn" disabled>Play</button>
+                    <button id="pause-btn" disabled>Pause</button>
                     <button id="stop-btn" disabled>Stop</button>
                 </div>
             </div>
         </main>
     </div>
-
-    <!-- Application Entry Point -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const { createVoiceSession } = require('./agents/voiceAgent');
 
 // --- Express App Setup ---
@@ -10,12 +11,23 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(express.json());
-// Serve the static frontend files from the 'public' directory
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// --- Endpoint to securely provide tool definitions to the client ---
+app.get('/api/tools', (req, res) => {
+    try {
+        const toolsPath = path.join(__dirname, 'agents', 'config', 'tools.json');
+        const tools = fs.readFileSync(toolsPath, 'utf-8');
+        res.setHeader('Content-Type', 'application/json');
+        res.send(tools);
+    } catch (error) {
+        console.error('❌ Error reading tools.json:', error);
+        res.status(500).json({ error: 'Could not load tool definitions.' });
+    }
+});
+
+
 // --- Endpoint for VOICE Agent Session Creation ---
-// This is the only API endpoint we need on the server.
-// It creates a secure, short-lived token for the client to connect to OpenAI's voice service.
 app.get('/api/session', async (req, res) => {
     try {
         console.log('🎙️  Requesting new voice session from OpenAI...');
@@ -26,7 +38,6 @@ app.get('/api/session', async (req, res) => {
         }
         
         console.log('✅  Voice session created successfully.');
-        // Send the session object, which includes the client_secret, back to the client.
         res.json(session);
 
     } catch (error) {

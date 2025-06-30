@@ -1,65 +1,101 @@
 // public/js/modules/UIManager.js
 class UIManager {
     constructor() {
-        // Cache DOM elements for performance
         this.elements = {
             audioFileInput: document.getElementById('audio-file-input'),
             fileStatus: document.getElementById('file-status'),
+            progressBarContainer: document.querySelector('.progress-bar-container'),
+            progressBar: document.getElementById('progress-bar'),
             manualControls: document.getElementById('manual-controls'),
+            effectsPanel: document.getElementById('effects-panel'),
             playBtn: document.getElementById('play-btn'),
+            pauseBtn: document.getElementById('pause-btn'),
             stopBtn: document.getElementById('stop-btn'),
             voiceControlBtn: document.getElementById('voice-control-btn'),
             voiceStatus: document.getElementById('voice-status'),
-            sliders: document.querySelectorAll('input[type="range"]'),
+            lastCommandDisplay: document.getElementById('last-command-display'),
+            lastCommandText: document.getElementById('last-command-text'),
         };
+        this.effectsConfig = null;
     }
 
-    bindEventListeners(audioEngine, fileManager, voiceAgent) {
-        // File loading
-        this.elements.audioFileInput.addEventListener('change', (e) => {
-            fileManager.handleFileSelect(e.target.files[0]);
-        });
+    async init(effectsConfig) {
+        this.effectsConfig = effectsConfig;
+        this.buildEffectsPanel();
+    }
 
-        // Playback controls
-        this.elements.playBtn.addEventListener('click', () => audioEngine.play());
-        this.elements.stopBtn.addEventListener('click', () => audioEngine.stop());
+    buildEffectsPanel() {
+        this.elements.effectsPanel.innerHTML = '';
+        for (const effectKey in this.effectsConfig) {
+            const effectConfig = this.effectsConfig[effectKey];
+            const group = document.createElement('div');
+            group.className = 'effect-group';
+            group.dataset.effect = effectKey;
+            group.innerHTML = `<h3>${effectConfig.name}</h3>`;
 
-        // Voice control
-        this.elements.voiceControlBtn.addEventListener('click', (e) => {
-            const btn = e.target;
-            if (btn.dataset.active === "true") {
-                voiceAgent.stopSession();
-            } else {
-                voiceAgent.startSession();
+            for (const paramKey in effectConfig.parameters) {
+                const paramConfig = effectConfig.parameters[paramKey];
+                const sliderId = `${effectKey}-${paramKey}`;
+                const container = document.createElement('div');
+                container.className = 'slider-container';
+                container.innerHTML = `
+                    <label for="${sliderId}">${paramConfig.label}</label>
+                    <input type="range" id="${sliderId}" min="${paramConfig.min}" max="${paramConfig.max}" value="${paramConfig.defaultValue}" step="${paramConfig.step}">
+                    <span class="slider-value"></span>
+                `;
+                group.appendChild(container);
             }
-        });
-        
-        // Manual effect sliders
-        this.elements.sliders.forEach(slider => {
+            this.elements.effectsPanel.appendChild(group);
+        }
+    }
+
+    bindEventListeners(audioEngine) {
+        const sliders = this.elements.effectsPanel.querySelectorAll('input[type="range"]');
+        sliders.forEach(slider => {
             slider.addEventListener('input', (e) => {
-                const effect = e.target.closest('.effect-group').dataset.effect;
-                const parameter = e.target.id.split('-')[1];
+                const effectKey = e.target.closest('.effect-group').dataset.effect;
+                const paramKey = e.target.id.split('-')[1];
                 const value = parseFloat(e.target.value);
-                const displayValue = audioEngine.setEffect(effect, parameter, value);
+                
+                const displayValue = effectKey === "volume" || effectKey === "speed"
+                    ? audioEngine.setPlaybackProperty(paramKey, value)
+                    : audioEngine.setEffect(effectKey, paramKey, value);
+
                 this.updateSliderValue(e.target, displayValue);
             });
-            // Trigger initial display value
             slider.dispatchEvent(new Event('input'));
         });
     }
 
     updateSliderValue(sliderElement, displayValue) {
         const valueSpan = sliderElement.nextElementSibling;
-        if (valueSpan && valueSpan.classList.contains('slider-value')) {
-            valueSpan.textContent = displayValue;
-        }
+        if (valueSpan) valueSpan.textContent = displayValue;
+    }
+
+    updatePlaybackProgress(percentage) {
+        this.elements.progressBar.style.width = `${percentage}%`;
     }
     
-    // --- UI State Update Methods ---
-    
+    showLastCommand(toolName, args) {
+        const text = `${toolName}(${JSON.stringify(args)})`;
+        this.elements.lastCommandText.textContent = text;
+        this.elements.lastCommandDisplay.style.display = 'block';
+    }
+
+    syncSlider(effect, parameter, value) {
+        const sliderId = `${effect}-${parameter}`;
+        const slider = document.getElementById(sliderId);
+        if (slider) {
+            slider.value = value;
+            slider.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+
     showManualControls() {
         this.elements.manualControls.style.display = 'block';
+        this.elements.progressBarContainer.style.display = 'block';
         this.elements.playBtn.disabled = false;
+        this.elements.pauseBtn.disabled = false;
         this.elements.stopBtn.disabled = false;
         this.elements.voiceControlBtn.disabled = false;
     }
@@ -72,29 +108,6 @@ class UIManager {
         this.elements.voiceStatus.textContent = message;
         this.elements.voiceControlBtn.textContent = isActive ? "Stop Voice Control" : "Start Voice Control";
         this.elements.voiceControlBtn.dataset.active = isActive;
-    }
-
-    // <<< THE NEW METHOD FOR SLIDER SYNCING >>>
-    /**
-     * Finds a slider by its effect and parameter name and updates its value.
-     * @param {string} effect - The effect name (e.g., 'reverb').
-     * @param {string} parameter - The parameter name (e.g., 'mix').
-     * @param {number} value - The new value for the slider.
-     */
-    syncSlider(effect, parameter, value) {
-        // Construct the slider's ID from the arguments (e.g., 'reverb-mix')
-        const sliderId = `${effect}-${parameter}`;
-        const slider = document.getElementById(sliderId);
-
-        if (slider) {
-            console.log(`Syncing UI slider: #${sliderId} to value ${value}`);
-            // Programmatically set the slider's value
-            slider.value = value;
-            // Manually dispatch an 'input' event to trigger the text label update
-            slider.dispatchEvent(new Event('input', { bubbles: true }));
-        } else {
-            console.warn(`UI Sync Warning: Slider with ID #${sliderId} not found.`);
-        }
     }
 }
 
