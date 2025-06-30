@@ -1,0 +1,25 @@
+{
+  "name": "soundverse-audio-effects",
+  "version": "1.0.0",
+  "description": "A voice-controlled audio effects studio using the Web Audio API and OpenAI Realtime.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js"
+  },
+  "keywords": [
+    "webaudio",
+    "openai",
+    "voice",
+    "audio-effects"
+  ],
+  "author": "AI Assistant",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
